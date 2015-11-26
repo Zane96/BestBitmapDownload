@@ -13,7 +13,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-
 import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -52,15 +51,22 @@ public class RecycleViewAdapter extends RecyclerView.Adapter<RecycleViewAdapter.
 
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
-        String url = Images.imageUrls[position];
+        String url;
 
-        BitmapDrawable drawable = getBitmapFromMemoryCache(url);
-        if(drawable != null){
-            holder.imageView.setImageDrawable(drawable);
-        }else {
-            loadBitmap(url, holder.imageView);
+        if(position != 1) {
+            url = Images.imageUrls[position];
+            BitmapDrawable drawable = getBitmapFromMemoryCache(url);
+            if(drawable != null){
+                holder.imageView.setImageDrawable(drawable);
+            }else {
+                loadBitmap(url, holder.imageView);
+            }
         }
+        else {
 
+            holder.imageView.setImageResource(R.drawable.ic_launcher);
+            //holder.imageView.setImageDrawable(App.getInstance().getResources().getDrawable(R.drawable.ic_launcher));
+        }
     }
 
     @Override
@@ -74,6 +80,7 @@ public class RecycleViewAdapter extends RecyclerView.Adapter<RecycleViewAdapter.
         if (cancelBeforeTask(url, imageView)){
             BitmapDownloadTask task = new BitmapDownloadTask(imageView);
             AsyncDrawable drawable = new AsyncDrawable(context.getResources(), mLoadingBitmap, task);
+            //!!!!
             imageView.setImageDrawable(drawable);
             task.execute(url);
         }
@@ -81,6 +88,7 @@ public class RecycleViewAdapter extends RecyclerView.Adapter<RecycleViewAdapter.
 
     //用来进行第一步的判断，如果imageview对应的task的url跟传进去的url不同，那么取消上一次task
     public boolean cancelBeforeTask(String url, ImageView imageView){
+
         BitmapDownloadTask task = getBitmapWorkerTask(imageView);
 
         if(task != null){
@@ -95,7 +103,7 @@ public class RecycleViewAdapter extends RecyclerView.Adapter<RecycleViewAdapter.
         return true;
     }
 
-    //用来根据传进来的imageview获得对应的draeable,再获得对应的task
+    //用来根据传进来的imageview获得对应的drawable,再获得对应的task
     private static BitmapDownloadTask getBitmapWorkerTask(ImageView imageView) {
         if (imageView != null) {
             final Drawable drawable = imageView.getDrawable();
@@ -172,6 +180,7 @@ public class RecycleViewAdapter extends RecyclerView.Adapter<RecycleViewAdapter.
             if(isCancelled()){
                 bitmapDrawable = null;
             }
+            //第二次判断，如果iamgeview里面的task跟这个item根据适配器传进来的正确url启动的task不相同，就不显示图片
             if(imageViewWeakReference != null && bitmapDrawable != null){
                 ImageView imageView = imageViewWeakReference.get();
                 BitmapDownloadTask task = getBitmapWorkerTask(imageView);
